@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="/addProduct" method="post">
+        <input type="text" name="name" placeholder="name" id="">
+        <input type="text" name="price" placeholder='price' id="">
+        <input type="text" name="quintity" placeholder='quintity' id="">
+        <button type="submit">add product</button>
+    </form>
+    <div id="products">
+
+    </div>
+    <div id="update">
+
+    </div>
+    <script>
+        function loadProducts() {
+            fetch('/products')
+                .then(res => res.json())
+                .then(products => {
+                    const container = document.getElementById('products')
+                    container.innerHTML= " "
+                    products.forEach(pd => {
+                        const p = document.createElement('p')
+                        p.innerHTML = `<strong> ${pd.name} </strong> price: ${pd.price}
+                        <button onclick="updateProduct('${pd._id}')">update</button>
+                       <button onclick="deletProduct(event, '${pd._id}')">delete product</button>
+                       `
+                        container.appendChild(p)
+                    });
+                })
+        }
+        loadProducts()
+
+        function updateProduct(id){
+            fetch(`product/${id}`)
+            .then(res => res.json())
+            .then(data=> {
+                const updata = document.getElementById('update');
+                updata.innerHTML = `
+                <h3>update: ${data._id}</h3>
+                <input type="text" value="${data.price}"  id="price">
+                <input type="text" value="${data.quintity}"  id="quintity">
+                <button onclick="update('${data._id}')"> submit </button>
+                `
+            })
+        }
+
+        function update(id){
+            const price = document.getElementById('price').value;
+            const quintity =  document.getElementById('quintity').value;
+            const product ={id, price, quintity}
+            fetch(`/update/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type' : 'application/json'},
+                body: JSON.stringify(product)
+               
+            })
+            .then(res => res.json())
+                .then(data=>{
+                    if(data){
+                        loadProducts()
+                    }
+                })
+        }
+
+        function deletProduct(event, id) {
+            fetch(`/delet/${id}`, {
+                method: 'DELETE'
+            })
+                .then(res => res.json())
+                .then(data => {
+                 if(data){
+                     event.target.parentNode.style.display = 'none'
+                 }
+                })
+        }
+    </script>
+</body>
+
+</html>
